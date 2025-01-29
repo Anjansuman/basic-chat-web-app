@@ -6,8 +6,7 @@ let allSockets = [];
 wss.on("connection", (socket) => {
     socket.on("message", (message) => {
         var _a;
-        //@ts-ignore
-        const parsedMessage = JSON.parse(message);
+        const parsedMessage = JSON.parse(message.toString());
         // this is to check if the user requested to join a chat room or not
         if (parsedMessage.type === "join") {
             // And if yes then push the user to the main array
@@ -15,6 +14,10 @@ wss.on("connection", (socket) => {
                 socket,
                 room: parsedMessage.payload.roomId
             });
+        }
+        // this is to exit from a room
+        if (parsedMessage.type === "exit") {
+            allSockets.filter(x => x.socket !== socket);
         }
         // This is to check if the user want to send a message or not
         if (parsedMessage.type === "chat") {

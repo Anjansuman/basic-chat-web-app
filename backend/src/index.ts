@@ -54,6 +54,7 @@ wss.on("connection", (socket) => {
             });
         }
 
+        // this is to exit from a room
         if(parsedMessage.type === "exit") {
             allSockets.filter(x => x.socket !== socket);
         }
