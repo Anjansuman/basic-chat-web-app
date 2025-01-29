@@ -2,17 +2,30 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ws_1 = require("ws");
 const wss = new ws_1.WebSocketServer({ port: 8080 });
-let userCount = 0;
 let allSockets = [];
 wss.on("connection", (socket) => {
-    allSockets.push(socket);
-    userCount += 1;
-    console.log("User connected #" + userCount);
     socket.on("message", (message) => {
-        console.log(message.toString());
-        for (let i = 0; i < allSockets.length; i++) {
-            const s = allSockets[i];
-            s.send(message.toString() + ": from the server");
+        var _a;
+        //@ts-ignore
+        const parsedMessage = JSON.parse(message);
+        // this is to check if the user requested to join a chat room or not
+        if (parsedMessage.type === "join") {
+            // And if yes then push the user to the main array
+            allSockets.push({
+                socket,
+                room: parsedMessage.payload.roomId
+            });
+        }
+        // This is to check if the user want to send a message or not
+        if (parsedMessage.type === "chat") {
+            // this will search for the current sending user's room I'd
+            const currentUserRoom = (_a = allSockets.find((x) => x.socket == socket)) === null || _a === void 0 ? void 0 : _a.room;
+            // If found then this loop will send the message to all users with same room I'd
+            allSockets.forEach((s) => {
+                if (s.room == currentUserRoom) {
+                    s.socket.send(parsedMessage.payload.message);
+                }
+            });
         }
     });
 });
